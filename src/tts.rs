@@ -57,7 +57,7 @@ pub async fn speak(msg: &str) -> Result<(), Box<dyn std::error::Error>> {
         stream.write(FRAMES as u32, |output| {
             for i in 0..n_write_samples {
                 if let Some(t) = wav_buffer_iter.next() {
-                    output[i] = *t as f32 / 32767.0;
+                    output[i] = 0.3 * (*t as f32 / 32767.0);
                 } else {
                     completed = true;
                 }
