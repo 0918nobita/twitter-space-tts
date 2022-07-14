@@ -21,9 +21,11 @@ struct DetailedTweet {
     text: String,
 }
 
-async fn search(query: String, since_id: Option<String>) -> Result<Vec<DetailedTweet>, String> {
-    let tw_auth_token = std::env::var("TW_AUTH_TOKEN").expect("TW_AUTH_TOKEN is not set");
-
+async fn search(
+    query: String,
+    since_id: Option<String>,
+    tw_auth_token: &str,
+) -> Result<Vec<DetailedTweet>, String> {
     let client = reqwest::Client::new();
 
     let mut query = vec![
@@ -75,15 +77,19 @@ async fn search(query: String, since_id: Option<String>) -> Result<Vec<DetailedT
     Ok(detailed_tweets)
 }
 
-pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>) {
+pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>, tw_auth_token: String) {
     let re = regex::Regex::new(r"https?://[A-Za-z0-9!\?/\+\-_~=;.,*&@#$%\(\)'\[\]]+").unwrap();
 
     tokio::spawn(async move {
         let mut latest_tweet_id: Option<String> = None;
 
         loop {
-            if let Ok(tweets) =
-                search("#0918nobitaのスペース".to_owned(), latest_tweet_id.clone()).await
+            if let Ok(tweets) = search(
+                "#0918nobitaのスペース".to_owned(),
+                latest_tweet_id.clone(),
+                &tw_auth_token,
+            )
+            .await
             {
                 if let Some(first) = tweets.first() {
                     latest_tweet_id = Some(first.id.clone());
