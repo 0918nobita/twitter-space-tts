@@ -76,6 +76,8 @@ async fn search(query: String, since_id: Option<String>) -> Result<Vec<DetailedT
 }
 
 pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>) {
+    let re = regex::Regex::new(r"https?://[A-Za-z0-9!\?/\+\-_~=;.,*&@#$%\(\)'\[\]]+").unwrap();
+
     tokio::spawn(async move {
         let mut latest_tweet_id: Option<String> = None;
 
@@ -88,13 +90,11 @@ pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>) {
                 }
 
                 for tweet in tweets.iter().rev() {
-                    send.send(format!(
-                        "{}さんのツイート。{}",
-                        tweet.author_name,
-                        tweet.text.replace("#0918nobitaのスペース", "")
-                    ))
-                    .await
-                    .expect("Failed to send");
+                    let msg = re.replace_all(&tweet.text, "").to_string();
+                    let msg = msg.replace("#0918nobitaのスペース", "");
+                    send.send(format!("{}さんのツイート。{}", tweet.author_name, msg))
+                        .await
+                        .expect("Failed to send");
                 }
             }
 
