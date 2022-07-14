@@ -4,7 +4,7 @@ const CHANNELS: i32 = 1;
 
 const FRAMES: u32 = 1024;
 
-pub async fn speak(msg: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn speak(msg: &str) -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
 
     let synthesis_query = client
@@ -68,4 +68,15 @@ pub async fn speak(msg: &str) -> Result<(), Box<dyn std::error::Error>> {
     stream.close()?;
 
     Ok(())
+}
+
+pub async fn speak_each_tweet(mut recv: tokio::sync::mpsc::Receiver<String>) {
+    loop {
+        if let Ok(msg) = recv.try_recv() {
+            if let Err(err) = speak(&msg).await {
+                eprintln!("{}", err)
+            }
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
 }

@@ -15,13 +15,13 @@ struct Tweet {
 }
 
 #[derive(Debug)]
-pub struct DetailedTweet {
-    pub id: String,
-    pub author_name: String,
-    pub text: String,
+struct DetailedTweet {
+    id: String,
+    author_name: String,
+    text: String,
 }
 
-pub async fn search(query: String, since_id: Option<String>) -> Result<Vec<DetailedTweet>, String> {
+async fn search(query: String, since_id: Option<String>) -> Result<Vec<DetailedTweet>, String> {
     let tw_auth_token = std::env::var("TW_AUTH_TOKEN").expect("TW_AUTH_TOKEN is not set");
 
     let client = reqwest::Client::new();
@@ -73,4 +73,32 @@ pub async fn search(query: String, since_id: Option<String>) -> Result<Vec<Detai
         .collect();
 
     Ok(detailed_tweets)
+}
+
+pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>) {
+    tokio::spawn(async move {
+        let mut latest_tweet_id: Option<String> = None;
+
+        loop {
+            if let Ok(tweets) =
+                search("#0918nobitaのスペース".to_owned(), latest_tweet_id.clone()).await
+            {
+                if let Some(first) = tweets.first() {
+                    latest_tweet_id = Some(first.id.clone());
+                }
+
+                for tweet in tweets.iter().rev() {
+                    send.send(format!(
+                        "{}さんのツイート。{}",
+                        tweet.author_name,
+                        tweet.text.replace("#0918nobitaのスペース", "")
+                    ))
+                    .await
+                    .expect("Failed to send");
+                }
+            }
+
+            std::thread::sleep(std::time::Duration::from_secs(3));
+        }
+    });
 }
