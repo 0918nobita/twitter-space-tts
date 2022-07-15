@@ -1,6 +1,7 @@
 # Twitter スペースでコメントを読み上げるツール
 
-VOICEVOX から得た音声データの再生には portaudio を使用しています。
+VOICEVOX から得た音声データの再生には portaudio を使用しています。  
+起動した時点の1分前から送信されたツイートを時系列順に読み上げます。
 
 ## 起動手順
 
@@ -11,5 +12,6 @@ VOICEVOX から得た音声データの再生には portaudio を使用してい
 - 以下のコマンドを実行
 
 ```bash
-cargo run
+# cargo run -- [検索クエリ]
+cargo run -- "#0918nobitaのスペース"
 ```
