@@ -6,12 +6,16 @@ VOICEVOX から得た音声データの再生には portaudio を使用してい
 ## 起動手順
 
 - VOICEVOX を起動
-- 環境変数の設定
-    - `TW_AUTH_TOKEN` で Authorization Token を指定
-    - `AUDIO_DEVICE` で出力デバイス名を指定 (例: `Soundflower (2ch)`)
+- 環境変数 `TW_AUTH_TOKEN` で Twitter API v2 の認可トークンを指定
 - 以下のコマンドを実行
 
 ```bash
 # cargo run -- [検索クエリ]
 cargo run -- "#0918nobitaのスペース"
+```
+
+`--audio-device` で音声出力デバイスを指定できます。省略した場合デフォルトのデバイスで再生されます。
+
+```bash
+cargo run -- "#0918nobitaのスペース" --audio-device "Soundflower (2ch)"
 ```

@@ -5,12 +5,14 @@ use twitter_space_tts::{launch, tts, twitter};
 #[derive(Deserialize)]
 struct Config {
     tw_auth_token: String,
-    audio_device: String,
 }
 
 #[derive(Parser)]
 struct Args {
     search_query: String,
+
+    #[clap(long)]
+    audio_device: Option<String>,
 }
 
 #[tokio::main]
@@ -25,7 +27,7 @@ async fn main() {
     };
 
     let tts_config = tts::TTSConfig {
-        audio_output_device: config.audio_device,
+        audio_output_device: args.audio_device,
     };
 
     launch(tw_config, &tts_config).await;
