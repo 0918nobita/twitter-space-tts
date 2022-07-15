@@ -1,4 +1,5 @@
 use chrono::{prelude::*, Duration};
+use regex::Regex;
 use serde::Deserialize;
 
 pub struct TwitterConfig {
@@ -97,7 +98,8 @@ async fn search(
 }
 
 pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>, tw_config: TwitterConfig) {
-    let re = regex::Regex::new(r"https?://[A-Za-z0-9!\?/\+\-_~=;.,*&@#$%\(\)'\[\]]+").unwrap();
+    let url_re = Regex::new(r"https?://[A-Za-z0-9!\?/\+\-_~=;.,*&@#$%\(\)'\[\]]+").unwrap();
+    let username_re = Regex::new(r"@\w{1,15}").unwrap();
 
     tokio::spawn(async move {
         let mut latest_tweet_id: Option<String> = None;
@@ -115,8 +117,10 @@ pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>, tw_config: Tw
                 }
 
                 for tweet in tweets.iter().rev() {
-                    let msg = re.replace_all(&tweet.text, "").to_string();
+                    let msg = url_re.replace_all(&tweet.text, "").to_string();
+                    let msg = username_re.replace_all(&msg, "").to_string();
                     let msg = msg.replace("#0918nobitaのスペース", "");
+
                     send.send(format!(
                         "{}さんのツイート。{}。ボイスヴォックスで読み上げました。",
                         tweet.author_name, msg
