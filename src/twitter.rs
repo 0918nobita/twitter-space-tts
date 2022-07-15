@@ -1,5 +1,9 @@
 use serde::Deserialize;
 
+pub struct TwitterConfig {
+    pub authorization_token: String,
+}
+
 #[derive(Debug, Deserialize)]
 struct User {
     id: String,
@@ -24,7 +28,7 @@ struct DetailedTweet {
 async fn search(
     query: String,
     since_id: Option<String>,
-    tw_auth_token: &str,
+    tw_config: &TwitterConfig,
 ) -> Result<Vec<DetailedTweet>, String> {
     let client = reqwest::Client::new();
 
@@ -41,7 +45,10 @@ async fn search(
     let res = client
         .get("https://api.twitter.com/2/tweets/search/recent")
         .query(&query)
-        .header("Authorization", format!("Bearer {}", tw_auth_token))
+        .header(
+            "Authorization",
+            format!("Bearer {}", tw_config.authorization_token),
+        )
         .send()
         .await
         .map_err(|err| format!("Failed to fetch tweets from Twitter API v2\n{}", err))?;
@@ -82,7 +89,7 @@ async fn search(
     Ok(detailed_tweets)
 }
 
-pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>, tw_auth_token: String) {
+pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>, tw_config: TwitterConfig) {
     let re = regex::Regex::new(r"https?://[A-Za-z0-9!\?/\+\-_~=;.,*&@#$%\(\)'\[\]]+").unwrap();
 
     tokio::spawn(async move {
@@ -92,7 +99,7 @@ pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>, tw_auth_token
             if let Ok(tweets) = search(
                 "#0918nobitaのスペース".to_owned(),
                 latest_tweet_id.clone(),
-                &tw_auth_token,
+                &tw_config,
             )
             .await
             {

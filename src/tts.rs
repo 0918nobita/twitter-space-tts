@@ -1,10 +1,14 @@
+pub struct TTSConfig {
+    pub audio_output_device: String,
+}
+
 const SAMPLE_RATE: f64 = 24000.0;
 
 const CHANNELS: i32 = 1;
 
 const FRAMES: u32 = 1024;
 
-async fn speak(msg: &str, audio_device: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn speak(msg: &str, tts_config: &TTSConfig) -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
 
     let synthesis_query = client
@@ -29,8 +33,8 @@ async fn speak(msg: &str, audio_device: &str) -> Result<(), Box<dyn std::error::
     let (device_index, device_info) = pa
         .devices()?
         .filter_map(|device| device.ok())
-        .find(|(_, device_info)| device_info.name == audio_device)
-        .expect(format!("`{}` device not found", audio_device).as_str());
+        .find(|(_, device_info)| device_info.name == tts_config.audio_output_device)
+        .unwrap_or_else(|| panic!("`{}` device not found", tts_config.audio_output_device));
 
     let output_params = portaudio::StreamParameters::<f32>::new(
         device_index,
@@ -55,9 +59,9 @@ async fn speak(msg: &str, audio_device: &str) -> Result<(), Box<dyn std::error::
     let mut completed = false;
     while !completed {
         stream.write(FRAMES as u32, |output| {
-            for i in 0..n_write_samples {
+            for out in output.iter_mut().take(n_write_samples) {
                 if let Some(t) = wav_buffer_iter.next() {
-                    output[i] = 0.3 * (*t as f32 / 32767.0);
+                    *out = 0.3 * (*t as f32 / 32767.0);
                 } else {
                     completed = true;
                 }
@@ -70,10 +74,13 @@ async fn speak(msg: &str, audio_device: &str) -> Result<(), Box<dyn std::error::
     Ok(())
 }
 
-pub async fn speak_each_tweet(mut recv: tokio::sync::mpsc::Receiver<String>, audio_device: String) {
+pub async fn speak_each_tweet(
+    mut recv: tokio::sync::mpsc::Receiver<String>,
+    tts_config: &TTSConfig,
+) {
     loop {
         if let Ok(msg) = recv.try_recv() {
-            if let Err(err) = speak(&msg, &audio_device).await {
+            if let Err(err) = speak(&msg, tts_config).await {
                 eprintln!("{}", err)
             }
         }
