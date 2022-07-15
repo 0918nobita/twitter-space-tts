@@ -4,6 +4,7 @@ use serde::Deserialize;
 
 pub struct TwitterConfig {
     pub authorization_token: String,
+    pub search_query: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -28,14 +29,13 @@ struct DetailedTweet {
 }
 
 async fn search(
-    query: String,
     since_id: Option<String>,
     tw_config: &TwitterConfig,
 ) -> Result<Vec<DetailedTweet>, String> {
     let client = reqwest::Client::new();
 
     let mut query = vec![
-        ("query", query),
+        ("query", tw_config.search_query.clone()),
         ("user.fields", "name".to_owned()),
         ("expansions", "author_id".to_owned()),
     ];
@@ -105,13 +105,7 @@ pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>, tw_config: Tw
         let mut latest_tweet_id: Option<String> = None;
 
         loop {
-            if let Ok(tweets) = search(
-                "#0918nobitaのスペース".to_owned(),
-                latest_tweet_id.clone(),
-                &tw_config,
-            )
-            .await
-            {
+            if let Ok(tweets) = search(latest_tweet_id.clone(), &tw_config).await {
                 if let Some(first) = tweets.first() {
                     latest_tweet_id = Some(first.id.clone());
                 }
