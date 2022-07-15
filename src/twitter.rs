@@ -35,7 +35,7 @@ async fn search(
     ];
 
     if let Some(since_id) = since_id {
-        query.push(("since_id", since_id.clone()));
+        query.push(("since_id", since_id));
     }
 
     let res = client
@@ -44,23 +44,28 @@ async fn search(
         .header("Authorization", format!("Bearer {}", tw_auth_token))
         .send()
         .await
-        .map_err(|_| "Failed to fetch")?;
+        .map_err(|err| format!("Failed to fetch tweets from Twitter API v2\n{}", err))?;
 
     if !res.status().is_success() {
-        eprintln!("Status: {}", res.status());
-        return Ok(Vec::new());
+        eprintln!("{}, skipped", res.status());
+        return Ok(vec![]);
     }
 
     let res = res
         .json::<serde_json::Value>()
         .await
-        .map_err(|_| "Failed to parse")?;
+        .map_err(|err| format!("Failed to parse response of Twitter API v2\n{}", err))?;
 
-    let users: Vec<User> = serde_json::from_value(res["includes"]["users"].clone())
-        .map_err(|_| "Failed to deserialize `includes.users` field")?;
+    let users: Vec<User> =
+        serde_json::from_value(res["includes"]["users"].clone()).map_err(|err| {
+            format!(
+                "Failed to deserialize `includes.users` field of response\n{}",
+                err
+            )
+        })?;
 
     let tweets: Vec<Tweet> = serde_json::from_value(res["data"].clone())
-        .map_err(|_| "Failed to deserialize `data` field")?;
+        .map_err(|err| format!("Failed to deserialize `data` field\n{}", err))?;
 
     let detailed_tweets: Vec<DetailedTweet> = tweets
         .iter()
