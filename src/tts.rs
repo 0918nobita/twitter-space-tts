@@ -61,7 +61,7 @@ async fn speak(msg: &str, tts_config: &TTSConfig) -> Result<(), Box<dyn std::err
         stream.write(FRAMES as u32, |output| {
             for out in output.iter_mut().take(n_write_samples) {
                 if let Some(t) = wav_buffer_iter.next() {
-                    *out = 0.3 * (*t as f32 / 32767.0);
+                    *out = 0.08 * (*t as f32 / 32767.0);
                 } else {
                     completed = true;
                 }
