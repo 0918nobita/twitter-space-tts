@@ -1,5 +1,7 @@
 # Twitter スペースでコメントを読み上げるツール
 
+[![Lint](https://github.com/0918nobita/twitter-space-tts/actions/workflows/lint.yml/badge.svg)](https://github.com/0918nobita/twitter-space-tts/actions/workflows/lint.yml)
+
 VOICEVOX から得た音声データの再生には portaudio を使用しています。  
 起動した時点の1分前から送信されたツイートを時系列順に読み上げます。
 
