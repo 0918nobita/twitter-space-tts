@@ -110,9 +110,12 @@ pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>, tw_config: Tw
                 for tweet in tweets.iter().rev() {
                     let msg = re.replace_all(&tweet.text, "").to_string();
                     let msg = msg.replace("#0918nobitaのスペース", "");
-                    send.send(format!("{}さんのツイート。{}", tweet.author_name, msg))
-                        .await
-                        .expect("Failed to send");
+                    send.send(format!(
+                        "{}さんのツイート。{}。ボイスヴォックスで読み上げました。",
+                        tweet.author_name, msg
+                    ))
+                    .await
+                    .expect("Failed to send");
                 }
             }
 
