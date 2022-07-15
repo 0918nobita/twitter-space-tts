@@ -1,3 +1,4 @@
+use chrono::{prelude::*, Duration};
 use serde::Deserialize;
 
 pub struct TwitterConfig {
@@ -40,6 +41,11 @@ async fn search(
 
     if let Some(since_id) = since_id {
         query.push(("since_id", since_id));
+    } else {
+        query.push((
+            "start_time",
+            (Utc::now() - Duration::minutes(1)).to_rfc3339(),
+        ));
     }
 
     let res = client
@@ -55,6 +61,7 @@ async fn search(
 
     if !res.status().is_success() {
         eprintln!("{}, skipped", res.status());
+        eprintln!("{:?}", res.text().await);
         return Ok(vec![]);
     }
 

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+chrono = "0.4"
 envy = "0.4"
 hound = "3.4.0"
 portaudio = "0.7.0"
