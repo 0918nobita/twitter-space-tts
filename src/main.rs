@@ -13,13 +13,27 @@ struct Args {
 
     #[clap(long)]
     audio_device: Option<String>,
+
+    #[clap(long)]
+    verbose: bool,
 }
 
 #[tokio::main]
 async fn main() {
-    let config: Config = envy::from_env().expect("Unable to read config");
-
     let args = Args::parse();
+
+    let mut builder = env_logger::builder();
+
+    if args.verbose {
+        builder.filter(Some("twitter_space_tts"), log::LevelFilter::Trace);
+    }
+
+    builder.init();
+
+    let config: Config = envy::from_env().unwrap_or_else(|_| {
+        log::error!("Failed to load config from environment variables");
+        std::process::exit(1);
+    });
 
     let tw_config = twitter::TwitterConfig {
         authorization_token: config.tw_auth_token,
