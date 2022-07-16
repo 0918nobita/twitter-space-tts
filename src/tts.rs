@@ -44,12 +44,15 @@ async fn speak(msg: &str, context: &TTSContext) -> anyhow::Result<()> {
         .await
         .context("Failed to parse response from VOICEVOX engine as bytes")?;
 
+    trace!("Creating audio output stream");
     let mut stream = context.pa.open_blocking_stream(context.output_settings)?;
 
+    trace!("Preparing wave file loader and buffer");
     let mut reader = hound::WavReader::new(std::io::Cursor::new(wav_bytes))?;
     let wav_buffer: Vec<i16> = reader.samples().map(|s| s.unwrap()).collect();
     let mut wav_buffer_iter = wav_buffer.iter();
 
+    trace!("Starting audio output stream");
     stream.start()?;
 
     let n_write_samples = FRAMES as usize * CHANNELS as usize;
@@ -66,6 +69,7 @@ async fn speak(msg: &str, context: &TTSContext) -> anyhow::Result<()> {
         })?;
     }
 
+    trace!("Closing audio output stream");
     stream.close()?;
 
     Ok(())
