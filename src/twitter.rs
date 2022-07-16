@@ -112,9 +112,9 @@ pub fn watch_latest_tweet(send: tokio::sync::mpsc::Sender<String>, tw_config: Tw
                 }
 
                 for tweet in tweets.iter().rev() {
-                    let msg = url_re.replace_all(&tweet.text, "").to_string();
-                    let msg = username_re.replace_all(&msg, "").to_string();
-                    let msg = hashtag_re.replace_all(&msg, "").to_string();
+                    let msg = url_re.replace_all(&tweet.text, "");
+                    let msg = username_re.replace_all(&msg, "");
+                    let msg = hashtag_re.replace_all(&msg, "");
 
                     send.send(format!(
                         "{}さんのツイート。{}。ボイスヴォックスで読み上げました。",
