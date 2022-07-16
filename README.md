@@ -21,3 +21,9 @@ cargo run -- "#0918nobitaのスペース"
 ```bash
 cargo run -- "#0918nobitaのスペース" --audio-device "Soundflower (2ch)"
 ```
+
+`--verbose` を指定すると詳細な動作ログを確認できます。
+
+```bash
+cargo run -- "#0918nobitaのスペース" --verbose
+```
