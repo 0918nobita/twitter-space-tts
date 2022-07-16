@@ -1,3 +1,6 @@
+use anyhow::Context;
+use log::trace;
+
 pub struct TTSConfig {
     pub audio_output_device: Option<String>,
 }
@@ -13,25 +16,33 @@ const CHANNELS: i32 = 1;
 
 const FRAMES: u32 = 1024;
 
-async fn speak(msg: &str, context: &TTSContext) -> Result<(), Box<dyn std::error::Error>> {
+async fn speak(msg: &str, context: &TTSContext) -> anyhow::Result<()> {
     let client = reqwest::Client::new();
+
+    trace!("Creating synthesis query");
 
     let synthesis_query = client
         .post("http://localhost:50021/audio_query")
         .query(&[("text", msg), ("speaker", "0")])
         .send()
-        .await?
+        .await
+        .context("Faild to send HTTP request to VOICEVOX engine")?
         .json::<serde_json::Value>()
-        .await?;
+        .await
+        .context("Failed to parse response from VOICEVOX engine as JSON")?;
+
+    trace!("Acuquiring the result of sound synthesis (wav)");
 
     let wav_bytes = client
         .post("http://localhost:50021/synthesis")
         .query(&[("speaker", "0")])
         .json(&synthesis_query)
         .send()
-        .await?
+        .await
+        .context("Failed to send HTTP request to VOICEVOX engine")?
         .bytes()
-        .await?;
+        .await
+        .context("Failed to parse response from VOICEVOX engine as bytes")?;
 
     let mut stream = context.pa.open_blocking_stream(context.output_settings)?;
 

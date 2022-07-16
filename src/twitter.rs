@@ -1,3 +1,4 @@
+use anyhow::Context;
 use chrono::{prelude::*, Duration};
 use regex::Regex;
 use serde::Deserialize;
@@ -31,7 +32,7 @@ struct DetailedTweet {
 async fn search(
     since_id: Option<String>,
     tw_config: &TwitterConfig,
-) -> Result<Vec<DetailedTweet>, String> {
+) -> anyhow::Result<Vec<DetailedTweet>> {
     let client = reqwest::Client::new();
 
     let mut query = vec![
@@ -58,7 +59,7 @@ async fn search(
         )
         .send()
         .await
-        .map_err(|err| format!("Failed to fetch tweets from Twitter API v2\n{}", err))?;
+        .context("Failed to fetch tweets from Twitter API v2")?;
 
     if !res.status().is_success() {
         eprintln!("{}, skipped", res.status());
@@ -69,18 +70,13 @@ async fn search(
     let res = res
         .json::<serde_json::Value>()
         .await
-        .map_err(|err| format!("Failed to parse response of Twitter API v2\n{}", err))?;
+        .context("Failed to parse response of Twitter API v2")?;
 
-    let users: Vec<User> =
-        serde_json::from_value(res["includes"]["users"].clone()).map_err(|err| {
-            format!(
-                "Failed to deserialize `includes.users` field of response\n{}",
-                err
-            )
-        })?;
+    let users: Vec<User> = serde_json::from_value(res["includes"]["users"].clone())
+        .context("Failed to deserialize `includes.users` field of response")?;
 
     let tweets: Vec<Tweet> = serde_json::from_value(res["data"].clone())
-        .map_err(|err| format!("Failed to deserialize `data` field\n{}", err))?;
+        .context("Failed to deserialize `data` field")?;
 
     let detailed_tweets: Vec<DetailedTweet> = tweets
         .iter()

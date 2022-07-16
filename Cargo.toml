@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0.58"
 chrono = "0.4"
 clap = { version = "3.2.12", features = ["derive"] }
 dialoguer = "0.10.1"
