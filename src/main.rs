@@ -1,5 +1,6 @@
 use clap::{ArgGroup, Parser};
 use log::{error, trace};
+use std::{env, process};
 use twitter_space_tts::{launch, tts, twitter};
 
 #[derive(Parser)]
@@ -24,16 +25,6 @@ struct Args {
 
 #[tokio::main]
 async fn main() {
-    /*
-    let selected = dialoguer::Select::new()
-        .with_prompt("Select audio output device")
-        .default(0)
-        .items(&["Foo", "Bar", "Baz"])
-        .interact()
-        .unwrap();
-    println!("You selected: {}", selected);
-    */
-
     let args = Args::parse();
 
     let mut builder = env_logger::builder();
@@ -52,9 +43,9 @@ async fn main() {
     );
 
     trace!("Get Twitter API v2 authorization token from TW_AUTH_TOKEN environment variable");
-    let tw_auth_token = std::env::var("TW_AUTH_TOKEN").unwrap_or_else(|_| {
+    let tw_auth_token = env::var("TW_AUTH_TOKEN").unwrap_or_else(|_| {
         error!("TW_AUTH_TOKEN environment variable is not set");
-        std::process::exit(1);
+        process::exit(1);
     });
 
     let tw_config = twitter::TwitterConfig {
@@ -66,5 +57,8 @@ async fn main() {
         audio_output_device: args.audio_device,
     };
 
-    launch(tw_config, &tts_config).await;
+    if let Err(err) = launch(tw_config, &tts_config).await {
+        error!("{}", err);
+        process::exit(1);
+    }
 }
