@@ -1,13 +1,22 @@
-use clap::Parser;
+use clap::{ArgGroup, Parser};
 use log::{error, trace};
 use twitter_space_tts::{launch, tts, twitter};
 
 #[derive(Parser)]
+#[clap(group(
+    ArgGroup::new("audio-device-group")
+        .required(false)
+        .multiple(false)
+        .args(&["audio-device", "select-audio-device"])
+))]
 struct Args {
     search_query: String,
 
-    #[clap(long)]
+    #[clap(long, short = 'a')]
     audio_device: Option<String>,
+
+    #[clap(long, short = 's')]
+    select_audio_device: bool,
 
     #[clap(long)]
     verbose: bool,
@@ -15,6 +24,16 @@ struct Args {
 
 #[tokio::main]
 async fn main() {
+    /*
+    let selected = dialoguer::Select::new()
+        .with_prompt("Select audio output device")
+        .default(0)
+        .items(&["Foo", "Bar", "Baz"])
+        .interact()
+        .unwrap();
+    println!("You selected: {}", selected);
+    */
+
     let args = Args::parse();
 
     let mut builder = env_logger::builder();

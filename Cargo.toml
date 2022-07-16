@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 chrono = "0.4"
 clap = { version = "3.2.12", features = ["derive"] }
+dialoguer = "0.10.1"
 env_logger = "0.9.0"
 hound = "3.4.0"
 log = "0.4"
