@@ -1,11 +1,6 @@
 use clap::Parser;
-use serde::Deserialize;
+use log::{error, trace};
 use twitter_space_tts::{launch, tts, twitter};
-
-#[derive(Deserialize)]
-struct Config {
-    tw_auth_token: String,
-}
 
 #[derive(Parser)]
 struct Args {
@@ -30,13 +25,21 @@ async fn main() {
 
     builder.init();
 
-    let config: Config = envy::from_env().unwrap_or_else(|_| {
-        log::error!("Failed to load config from environment variables");
+    trace!("Get config from command line arguments");
+    trace!("Search query: {}", args.search_query);
+    trace!(
+        "Audio device: {}",
+        args.audio_device.as_deref().unwrap_or("Not specified")
+    );
+
+    trace!("Get Twitter API v2 authorization token from TW_AUTH_TOKEN environment variable");
+    let tw_auth_token = std::env::var("TW_AUTH_TOKEN").unwrap_or_else(|_| {
+        error!("TW_AUTH_TOKEN environment variable is not set");
         std::process::exit(1);
     });
 
     let tw_config = twitter::TwitterConfig {
-        authorization_token: config.tw_auth_token,
+        authorization_token: tw_auth_token,
         search_query: args.search_query,
     };
 
