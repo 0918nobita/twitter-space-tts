@@ -2,10 +2,6 @@ use anyhow::Context;
 use log::trace;
 use std::{io, thread, time};
 
-pub struct TTSConfig {
-    pub audio_output_device: Option<String>,
-}
-
 pub struct TTSContext {
     pub pa: portaudio::PortAudio,
     pub output_settings: portaudio::OutputStreamSettings<f32>,

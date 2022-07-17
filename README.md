@@ -42,6 +42,13 @@ cargo run -- "#0918nobitaのスペース"
 cargo run -- "#0918nobitaのスペース" --audio-device "Soundflower (2ch)"
 ```
 
+対話形式で音声出力デバイスを選択する場合、`--select-audio-device` を指定してください。  
+`--audio-device` オプションとの併用はできません。
+
+```bash
+cargo run -- "#0918nobitaのスペース" --select-audio-device
+```
+
 `--verbose` を指定すると詳細な動作ログを確認できます。
 
 ```bash

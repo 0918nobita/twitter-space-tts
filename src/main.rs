@@ -1,7 +1,7 @@
 use clap::{ArgGroup, Parser};
 use log::{error, trace};
 use std::{env, process};
-use twitter_space_tts::{launch, tts, twitter};
+use twitter_space_tts::{launch, twitter, TTSConfig, TTSOutputDevice};
 
 #[derive(Parser)]
 #[clap(group(
@@ -53,8 +53,21 @@ async fn main() {
         search_query: args.search_query,
     };
 
-    let tts_config = tts::TTSConfig {
-        audio_output_device: args.audio_device,
+    let tts_config = if args.select_audio_device {
+        if args.audio_device.is_some() {
+            unreachable!();
+        }
+        TTSConfig {
+            audio_output_device: TTSOutputDevice::SelectInteractively,
+        }
+    } else if let Some(device_name) = args.audio_device {
+        TTSConfig {
+            audio_output_device: TTSOutputDevice::Specified(device_name),
+        }
+    } else {
+        TTSConfig {
+            audio_output_device: TTSOutputDevice::NotSpecified,
+        }
     };
 
     if let Err(err) = launch(tw_config, &tts_config).await {
