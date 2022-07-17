@@ -1,2 +1,4 @@
 /target
 /.envrc
+/lib/portaudio.lib
+portaudio_x64.dll
