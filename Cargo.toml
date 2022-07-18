@@ -2,6 +2,7 @@
 name = "twitter-space-tts"
 version = "0.1.0"
 edition = "2021"
+authors = ["Kodai Matsumoto <nobita.0918@gmail.com>"]
 
 [dependencies]
 anyhow = "1.0.58"

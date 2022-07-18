@@ -4,12 +4,16 @@ use std::{env, process};
 use twitter_space_tts::{launch, twitter, TTSConfig, TTSOutputDevice};
 
 #[derive(Parser)]
-#[clap(group(
-    ArgGroup::new("audio-device-group")
-        .required(false)
-        .multiple(false)
-        .args(&["audio-device", "select-audio-device"])
-))]
+#[clap(
+    author,
+    version,
+    group(
+        ArgGroup::new("audio-device-group")
+            .required(false)
+            .multiple(false)
+            .args(&["audio-device", "select-audio-device"])
+    )
+)]
 struct Args {
     search_query: String,
 
